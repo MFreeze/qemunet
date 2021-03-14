@@ -1,0 +1,4 @@
+SWITCH s1
+HOST debian10   blacksabbath    s1
+HOST debian10   ledzeppelin     s1
+HOST attacker   maiden          s1
