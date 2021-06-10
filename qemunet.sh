@@ -78,6 +78,7 @@ SWMAXNUMPORTS=32    # max number of ports allowed in VDE_SWITCH (default 32)
 QEMU="qemu-system-x86_64"
 QEMUIMG="qemu-img"
 VDESWITCH="vde_switch"
+VDESLIRP="slirpvde"
 SOCAT="socat"
 WGET="wget"
 
@@ -644,6 +645,43 @@ SWITCH() {
     echo $CMD > $CMDFILE
 
 }
+
+# TODO: Better handle slirp 
+SLIRP() {
+    SWITCHNAME=$1
+    SWITCHDIR="$SESSIONDIR/switch/$SWITCHNAME"
+    SWITCHMGMT="$SESSIONDIR/$SWITCHNAME.mgmt"
+    # SWITCHDIRS="$SWITCHDIR $SWITCHDIRS"
+    PIDFILE="$SESSIONDIR/$SWITCHNAME.pid"
+    if ! [ -d "$SWITCHDIR" ] ; then rm -rf $SWITCHDIR ; fi
+    mkdir -p $SWITCHDIR
+    CMD="$VDESLIRP -d -s $SWITCHDIR -p $PIDFILE -D"
+    echo "[$SWITCHNAME] $CMD"
+    $CMD
+    # PID=$(cat $PIDFILE)
+    # SWITCHPIDS="$PID $SWITCHPIDS"
+
+    # TODO: merge ths routine with SWITCH()
+    # BUG: tmux support not available?
+    SWPORTNUM[$SWITCHNAME]=1
+    if [ "$USEVLAN" -eq 1 ]; then
+        # by default, only 32 ports are available! Using port numbers
+        # greater than 20 for trunking.
+        SWPORTNUMTRUNK[$SWITCHNAME]=20
+    fi
+    # launch VDE switch management console in xterm terminal
+    if [ "$SWITCHTERM" -eq 1 ] ; then
+        CMD=$(TERMCMD xterm $SWITCHNAME)
+        CMD="${CMD} vdeterm $SWITCHMGMT"
+        echo "[$SWITCHNAME] $CMD"
+        $CMD &
+    fi
+
+    # save qemu command
+    CMDFILE="$SESSIONDIR/$SWITCHNAME.sh"
+    echo $CMD > $CMDFILE
+}
+
 
 HUB() {
     SWITCHNAME=$1
