@@ -4,3 +4,4 @@ images
 session
 *.torrent
 *.tar.gz
+extra-local.cfg
